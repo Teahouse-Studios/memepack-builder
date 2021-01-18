@@ -7,7 +7,7 @@ setuptools.setup(
     name="memepack_builder",
     version="0.1.0a3",
     author="MysticNebula70",
-    author_email="alpha5130@outlook.com",
+    author_email="mysticnebula70@teahou.se",
     description="A tool for packaging Memefied Chinese resource pack",
     long_description=long_description,
     long_description_content_type="text/markdown",
