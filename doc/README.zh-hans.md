@@ -20,11 +20,11 @@
 
 ### 在命令行内
 
-从命令行使用时（`python -m memepack_builder`），程序会提示输入合适的参数，然后按要求自动构建资源包。关于完整用法，请见[此页](/CLI_Manual.zh-hans.md)。
+从命令行使用时（`python -m memepack_builder`），程序会提示输入合适的参数，然后按要求自动构建资源包。关于完整用法，请见[此页](./CLI_Manual.zh-hans.md)。
 
 ## 贡献
 
-我们欢迎您为此项目作出贡献。请参考此[指导](/CONTRIBUTING.zh-hans.md)以获取详细信息。
+我们欢迎您为此项目作出贡献。请参考此[指导](./CONTRIBUTING.zh-hans.md)以获取详细信息。
 
 ## 授权许可
 

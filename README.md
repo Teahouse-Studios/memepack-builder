@@ -2,7 +2,7 @@
 
 [![Issues](https://img.shields.io/github/issues/Teahouse-Studios/memepack-builder?logo=github&style=flat-square)](https://github.com/Teahouse-Studios/memepack-builder/issues)    [![Pull requests](https://img.shields.io/github/issues-pr/Teahouse-Studios/memepack-builder?logo=github&style=flat-square)](https://github.com/Teahouse-Studios/memepack-builder/pulls)    [![License](https://img.shields.io/static/v1?label=License&message=Apache-2.0&color=db2331&style=flat-square&logo=apache)](http://www.apache.org/licenses/LICENSE-2.0)
 
-[简体中文](/README.zh-hans.md)
+[简体中文](./doc/README.zh-hans.md)
 
 A tool for packaging Memefied Chinese resource pack for Minecraft.
 
@@ -22,11 +22,11 @@ The package provides four classes: `PlatformChecker`, `ModuleChecker`, `JEPackBu
 
 ### Used in CLI
 
-When called in CLI (i.e. `python -m memepack_builder`), the package will ask for proper arguments, and build the resource pack as needed. For full usage, see [This page](/CLI_Manual.md).
+When called in CLI (i.e. `python -m memepack_builder`), the package will ask for proper arguments, and build the resource pack as needed. For full usage, see [This page](./doc/CLI_Manual.md).
 
 ## Contribution
 
-We would be grateful if you can contribute to this project. See the [Contribution guide](/CONTRIBUTING.md) for more information.
+We would be grateful if you can contribute to this project. See the [Contribution guide](./CONTRIBUTING.md) for more information.
 
 ## License
 
