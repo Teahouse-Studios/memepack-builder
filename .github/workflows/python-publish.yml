@@ -1,9 +1,10 @@
 on:
-  release:
-    types: [created]
+  push:
+    tags:
+      - "v*"
 
 jobs:
-  deploy:
+  release:
 
     runs-on: ubuntu-latest
 
@@ -19,8 +20,7 @@ jobs:
         pip install setuptools wheel twine
     - name: Build and publish
       env:
-        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         python setup.py sdist bdist_wheel
-        twine upload dist/*
+        hub release create $(find ./dist -type f -printf "-a %p ") -m "${GITHUB_REF##*/}" "${GITHUB_REF##*/}"
