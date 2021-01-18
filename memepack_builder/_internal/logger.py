@@ -14,4 +14,4 @@ class logger(object):
         self.__log.append(line)
 
     def clear(self):
-        self.__log = []
+        self.__log.clear()

@@ -1,6 +1,4 @@
-__all__ = [
-    'module_checker'
-]
+__all__ = ['ModuleChecker']
 
 import json
 import os
@@ -58,7 +56,8 @@ class ModuleChecker(object):
             result = _analyze_module(
                 os.path.join(self.module_path, module))
             if result['code'] == WARN_OK:
-                module_info['modules'][result['data'].pop('type')].append(result['data'])
+                module_info['modules'][result['data'].pop(
+                    'type')].append(result['data'])
             else:
                 entry = f"Warning [{result['code']}]: {result['message']}"
                 self.__logger.append(entry)
@@ -92,6 +91,7 @@ def _analyze_module(path: str):
         return _result_msg(WARN_OK, "Analysis successfully finished.", data)
     else:
         return _result_msg(WARN_BROKEN_MODULE, f'In path "{dir_name}": No module_manifest.json.')
+
 
 def _result_msg(code: int, message: str, data=None):
     result = _build_message(code, message)
