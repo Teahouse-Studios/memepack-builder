@@ -1,5 +1,5 @@
 __all__ = [
-    'builder'
+    'builder', 'LICENSE_FILE'
 ]
 
 import json
@@ -8,8 +8,11 @@ from .common import _build_message
 from .err_code import *
 from .logger import logger
 from hashlib import sha256
+from zipfile import ZipFile
 
 _keys = 'platform', 'type', 'modules', 'mod', 'output', 'hash', 'format', 'compatible'
+excluded_file = 'add.json', 'remove.json', 'module_manifest.json'
+LICENSE_FILE = 'LICENSE'
 
 
 def _normalize_args(args: dict):
@@ -63,11 +66,52 @@ class builder(object):
     def build_log(self):
         return self._logger.raw_log
 
+    def build(self):
+        self.clean_status()
+        result = self._check_args()
+        if result['code'] == ERR_OK:
+            self._internal_build()
+        else:
+            self._raise_error(result)
+
     def clean_status(self):
         self._warning_count = 0
         self._error_code = ERR_OK
         self._logger.clear()
         self._file_name = ""
+
+    def _check_args(self):
+        # virtual method, need to be overriden
+        pass
+
+    def _internal_build(self):
+        # virtual method, need to be overriden
+        pass
+
+    def _dump_resources(self, modules: list, pack: ZipFile):
+        item_texture = []
+        terrain_texture = []
+        for item in modules:
+            base_folder = os.path.join(self.module_info['path'], item)
+            for root, _, files in os.walk(base_folder):
+                for file in files:
+                    if file not in excluded_file:
+                        if file == "item_texture.json":
+                            item_texture.append(item)
+                        elif file == "terrain_texture.json":
+                            terrain_texture.append(item)
+                        else:
+                            path = os.path.join(root, file)
+                            arcpath = path[path.find(
+                                base_folder) + len(base_folder) + 1:]
+                            # prevent duplicates
+                            if (testpath := arcpath.replace(os.sep, "/")) not in pack.namelist():
+                                pack.write(os.path.join(
+                                    root, file), arcname=arcpath)
+                            else:
+                                self._raise_warning(_build_message(
+                                    WARN_DUPLICATED_FILE, f"Duplicated '{testpath}', skipping."))
+        return item_texture, terrain_texture
 
     def _raise_warning(self, msg: dict):
         entry = f"Warning [{msg['code']}]: {msg['message']}"

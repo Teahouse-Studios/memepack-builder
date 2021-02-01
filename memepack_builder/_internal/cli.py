@@ -12,7 +12,7 @@ def verify_args(args, log):
 
 
 def generate_parser():
-    parser = ArgumentParser()
+    parser = ArgumentParser(prog='memepack_builder', description='Build memefied Minecraft resource pack')
     parser.add_argument('platform', default='je', choices=(
         'je', 'be'), help='Which platform the pack is targeting. Should be "je" or "be". Default value is "je".')
     parser.add_argument('type', default='normal', choices=('normal', 'compat', 'legacy', 'mcpack', 'zip'),
