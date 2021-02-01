@@ -22,11 +22,11 @@ The package provides four classes: `PlatformChecker`, `ModuleChecker`, `JEPackBu
 
 ### Used in CLI
 
-When called in CLI (i.e. `python -m memepack_builder`), the package will ask for proper arguments, and build the resource pack as needed. For full usage, see [This page](./doc/CLI_Manual.md).
+When called in CLI (i.e. `python -m memepack_builder`), the package will ask for proper arguments, and build the resource pack as needed. For full usage, see [this page](./doc/CLI_Manual.md).
 
 ## Contribution
 
-We would be grateful if you can contribute to this project. See the [Contribution guide](./CONTRIBUTING.md) for more information.
+We would be grateful if you can contribute to this project. See the [contribution guide](./CONTRIBUTING.md) for more information.
 
 ## License
 
