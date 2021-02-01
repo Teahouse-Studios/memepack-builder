@@ -24,4 +24,4 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         python setup.py sdist bdist_wheel
-        hub release create $(find ./dist -type f -name "*.tar.gz" -o -name "*.whl" -printf "-a %p ") -m "${GITHUB_REF##*/}" "${GITHUB_REF##*/}"
+        hub release create $(find ./dist -type f \( -name "*.tar.gz" -o -name "*.whl" \) -printf "-a %p ") -m "${GITHUB_REF##*/}" "${GITHUB_REF##*/}"
