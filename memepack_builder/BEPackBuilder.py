@@ -4,7 +4,6 @@ import json
 import os
 from zipfile import ZipFile, ZIP_DEFLATED
 from memepack_builder._internal.builder import builder, LICENSE_FILE
-from memepack_builder._internal.common import _build_message
 from memepack_builder._internal.err_code import *
 
 PACK_ICON_FILE = 'pack_icon.png'
@@ -21,8 +20,8 @@ class BEPackBuilder(builder):
         # check essential arguments
         for item in ('type', 'compatible', 'modules', 'output', 'hash'):
             if item not in self.build_args:
-                return _build_message(ERR_MISSING_ARGUMENT, f'Missing required argument "{item}".')
-        return _build_message(ERR_OK, 'Check passed.')
+                return ERR_MISSING_ARGUMENT, f'Missing required argument "{item}".'
+        return ERR_OK, 'Check passed.'
 
     def _internal_build(self):
         args = self.build_args

@@ -102,5 +102,4 @@ def _build_msg(err_code: int, warning_count: int, file_name: str, log: list):
 
 
 def _raise_error(err_code: int, msg: str, log: list):
-    entry = f'Error [{err_code}]: {msg}'
-    log.append(entry)
+    log.append(f'Error [{err_code}]: {msg}')

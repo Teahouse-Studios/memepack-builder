@@ -5,7 +5,6 @@ import json
 import os
 from zipfile import ZipFile, ZIP_DEFLATED
 from memepack_builder._internal.builder import builder, LICENSE_FILE
-from memepack_builder._internal.common import _build_message
 from memepack_builder._internal.err_code import *
 
 
@@ -53,18 +52,18 @@ class JEPackBuilder(builder):
         # check essential arguments
         for key in ('type', 'modules', 'mod', 'output', 'hash'):
             if key not in self.build_args:
-                return _build_message(ERR_MISSING_ARGUMENT, f'Missing required argument "{key}".')
+                return ERR_MISSING_ARGUMENT, f'Missing required argument "{key}".'
         # check "format"
         if 'format' not in args or args['format'] is None:
             # did not specify "format", assume a value
             format = args['type'] == 'legacy' and PACK_LEGACY_FORMAT or PACK_CURRENT_FORMAT
-            self._raise_warning(_build_message(
-                WARN_IMPLICIT_FORMAT, f'Did not specify "pack_format". Assuming value is "{format}".'))
+            self._raise_warning(
+                WARN_IMPLICIT_FORMAT, f'Did not specify "pack_format". Assuming value is "{format}".')
             args['format'] = format
         else:
             if (args['type'] == 'legacy' and args['format'] > 3) or (args['type'] in ('normal', 'compat') and args['format'] <= 3):
-                return _build_message(ERR_MISMATCHED_FORMAT, f'Type "{args["type"]}" does not match pack_format {args["format"]}.')
-        return _build_message(ERR_OK, 'Check passed.')
+                return ERR_MISMATCHED_FORMAT, f'Type "{args["type"]}" does not match pack_format {args["format"]}.'
+        return ERR_OK, 'Check passed.'
 
     def _internal_build(self):
         args = self.build_args
@@ -86,8 +85,8 @@ class JEPackBuilder(builder):
         mcmeta = self.__process_meta(args)
         # decide language file name & ext
         if (lang_file_name := _get_lang_filename(args['type'])) == '':
-            self._raise_error(_build_message(
-                ERR_UNKNOWN_ARGUMENT, 'Unknown argument "type".'))
+            self._raise_error(
+                ERR_UNKNOWN_ARGUMENT, 'Unknown argument "type".')
             return None
         pack_name = self._create_dir()
         self._logger.append(f"Building pack {pack_name}")
@@ -142,8 +141,8 @@ class JEPackBuilder(builder):
                 elif (normed_path := os.path.basename(os.path.normpath(item))) in existing_mods:
                     mods_list.append(normed_path)
                 else:
-                    self._raise_warning(_build_message(
-                        WARN_MOD_NOT_FOUND, f'Mod file "{item}" does not exist, skipping.'))
+                    self._raise_warning(
+                        WARN_MOD_NOT_FOUND, f'Mod file "{item}" does not exist, skipping.')
             return mods_list
 
     def __get_mod_content(self, mod_list: list) -> dict:
@@ -157,8 +156,8 @@ class JEPackBuilder(builder):
                     mods |= (line.strip().split(
                         "=", 1) for line in f if line.strip() != '' and not line.startswith('#'))
             else:
-                self._raise_warning(_build_message(
-                    WARN_UNKNOWN_MOD_FILE, f'File type "{file[file.rfind(".") + 1:]}" is not supported, skipping.'))
+                self._raise_warning(
+                    WARN_UNKNOWN_MOD_FILE, f'File type "{file[file.rfind(".") + 1:]}" is not supported, skipping.')
         return mods
 
     def __generate_legacy_content(self, content: dict) -> str:
@@ -168,15 +167,15 @@ class JEPackBuilder(builder):
         legacy_lang_data = {}
         for item in mappings:
             if (mapping_file := f"{item}.json") not in os.listdir(self.legacy_mapping_path):
-                self._raise_warning(_build_message(
-                    WARN_MAPPING_NOT_FOUND, f'Missing mapping "{mapping_file}", skipping.'))
+                self._raise_warning(
+                    WARN_MAPPING_NOT_FOUND, f'Missing mapping "{mapping_file}", skipping.')
             else:
                 mapping = json.load(
                     open(os.path.join(self.legacy_mapping_path, mapping_file), 'r', encoding='utf8'))
                 for k, v in mapping.items():
                     if v not in content:
-                        self._raise_warning(_build_message(
-                            WARN_CORRUPTED_MAPPING, f'In file "{mapping_file}": Corrupted key-value pair {{"{k}": "{v}"}}.'))
+                        self._raise_warning(
+                            WARN_CORRUPTED_MAPPING, f'In file "{mapping_file}": Corrupted key-value pair {{"{k}": "{v}"}}.')
                     else:
                         legacy_lang_data[k] = content[v]
         return ''.join(f'{k}={v}\n' for k, v in legacy_lang_data.items())

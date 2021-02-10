@@ -4,9 +4,7 @@ __all__ = [
 
 import json
 import os
-from .common import _build_message
 from .err_code import *
-from .logger import logger
 from hashlib import sha256
 from zipfile import ZipFile
 
@@ -28,7 +26,7 @@ class builder(object):
     def __init__(self, main_res_path: str, module_info: dict):
         self.__main_res_path = main_res_path
         self.__module_info = module_info
-        self._logger = logger()
+        self._logger = []
         self._digest = ''
         self.clean_status()
 
@@ -64,15 +62,15 @@ class builder(object):
 
     @property
     def build_log(self):
-        return self._logger.raw_log
+        return self._logger
 
     def build(self):
         self.clean_status()
-        result = self._check_args()
-        if result['code'] == ERR_OK:
+        code, message = self._check_args()
+        if code == ERR_OK:
             self._internal_build()
         else:
-            self._raise_error(result)
+            self._raise_error(code, message)
 
     def clean_status(self):
         self._warning_count = 0
@@ -109,21 +107,19 @@ class builder(object):
                                 pack.write(os.path.join(
                                     root, file), arcname=arcpath)
                             else:
-                                self._raise_warning(_build_message(
-                                    WARN_DUPLICATED_FILE, f"Duplicated '{testpath}', skipping."))
+                                self._raise_warning(
+                                    WARN_DUPLICATED_FILE, f"Duplicated '{testpath}', skipping.")
         return item_texture, terrain_texture
 
-    def _raise_warning(self, msg: dict):
-        entry = f"Warning [{msg['code']}]: {msg['message']}"
-        self._logger.append(entry)
+    def _raise_warning(self, code: int, message: str):
+        self._logger.append(f"Warning [{code}]: {message}")
         self._warning_count += 1
 
-    def _raise_error(self, msg: dict):
-        entry = f"Error [{msg['code']}]: {msg['message']}"
+    def _raise_error(self, code: int, message: str):
         terminate_msg = "Terminate building because an error occurred."
-        self._logger.append(entry)
+        self._logger.append(f"Error [{code}]: {message}")
         self._logger.append(terminate_msg)
-        self._error_code = msg['code']
+        self._error_code = code
 
     def _get_lists(self):
         # get language modules
@@ -161,8 +157,8 @@ class builder(object):
                 if item in full_list:
                     include_list.append(item)
                 else:
-                    self._raise_warning(_build_message(
-                        WARN_MODULE_NOT_FOUND, f'Module "{item}" does not exist, skipping.'))
+                    self._raise_warning(
+                        WARN_MODULE_NOT_FOUND, f'Module "{item}" does not exist, skipping.')
             return include_list
 
     def _handle_modules(self, resource_list: list, language_list: list, mixed_list: list, collection_list: list):
@@ -191,6 +187,6 @@ class builder(object):
                     if key in lang_data:
                         lang_data.pop(key)
                     else:
-                        self._raise_warning(_build_message(
-                            WARN_KEY_NOT_FOUND, f'Key "{key}" does not exist, skipping.'))
+                        self._raise_warning(
+                            WARN_KEY_NOT_FOUND, f'Key "{key}" does not exist, skipping.')
         return lang_data

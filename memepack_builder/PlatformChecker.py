@@ -1,8 +1,8 @@
 __all__ = ['PlatformChecker']
 
 import os
-from memepack_builder._internal.common import _build_message
 from memepack_builder._internal.err_code import *
+
 
 class PlatformChecker(object):
     def __init__(self, main_res_path: str, intended_platform: str):
@@ -18,14 +18,12 @@ class PlatformChecker(object):
         elif os.path.exists(be_target) and os.path.isfile(be_target):
             self.__real = 'be'
         else:
-            self.__real = 'unknown'
-        return self.__return()
-
-    def __return(self):
-        if self.__real == 'unknown':
             return _build_message(ERR_UNKNOWN_PLATFORM, 'Unknown target platform.')
+        if self.__real != self.__intended:
+            return _build_message(ERR_MISMATCHED_PLATFORM, f'{self.__real.upper()} structure detected, can\'t build {self.__intended.upper()} pack.')
         else:
-            if self.__real != self.__intended:
-                return _build_message(ERR_MISMATCHED_PLATFORM, f'{self.__real.upper()} structure detected, can\'t build {self.__intended.upper()} pack.')
-            else:
-                return _build_message(ERR_OK, 'Check passed.')
+            return _build_message(ERR_OK, 'Check passed.')
+
+
+def _build_message(code: int, message: str):
+    return {'code': code, 'message': message}

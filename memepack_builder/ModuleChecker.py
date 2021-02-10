@@ -2,20 +2,18 @@ __all__ = ['ModuleChecker']
 
 import json
 import os
-from memepack_builder._internal.logger import logger
-from memepack_builder._internal.common import _build_message
 from memepack_builder._internal.err_code import *
 
 
 class ModuleChecker(object):
     def __init__(self, module_path: str):
         self.__module_path = module_path
-        self.__logger = logger()
+        self.__logger = []
         self.clean_status()
 
     @property
     def check_log(self):
-        return self.__logger.raw_log
+        return self.__logger
 
     @property
     def module_info(self):
@@ -94,7 +92,7 @@ def _analyze_module(path: str):
 
 
 def _result_msg(code: int, message: str, data=None):
-    result = _build_message(code, message)
+    result = {'code': code, 'message': message}
     if data:
         result['data'] = data
     return result
