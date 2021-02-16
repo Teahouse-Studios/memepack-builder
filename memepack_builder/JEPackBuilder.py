@@ -11,6 +11,7 @@ from memepack_builder._internal.err_code import *
 PACK_LEGACY_FORMAT = 3
 PACK_CURRENT_FORMAT = 7
 
+JE_BUILD_ARGS = 'type', 'modules', 'mod', 'output', 'hash'
 GAME_LANG_FILE_PATH = 'assets/minecraft/lang/'
 REALMS_LANG_FILE_PATH = 'assets/realms/lang/'
 PACK_ICON_FILE = 'pack.png'
@@ -50,9 +51,9 @@ class JEPackBuilder(builder):
     def _check_args(self):
         args = self.build_args
         # check essential arguments
-        for key in ('type', 'modules', 'mod', 'output', 'hash'):
-            if key not in self.build_args:
-                return ERR_MISSING_ARGUMENT, f'Missing required argument "{key}".'
+        for arg in JE_BUILD_ARGS:
+            if arg not in self.build_args:
+                return ERR_MISSING_ARGUMENT, f'Missing required argument "{arg}".'
         # check "format"
         if 'format' not in args or args['format'] is None:
             # did not specify "format", assume a value

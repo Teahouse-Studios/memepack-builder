@@ -3,13 +3,16 @@ __all__ = ['BEPackBuilder']
 import json
 import os
 from zipfile import ZipFile, ZIP_DEFLATED
-from memepack_builder._internal.builder import builder, LICENSE_FILE
+from memepack_builder._internal.builder import *
 from memepack_builder._internal.err_code import *
 
+BE_BUILD_ARGS = 'type', 'compatible', 'modules', 'output', 'hash'
 PACK_ICON_FILE = 'pack_icon.png'
 PACK_MANIFEST_FILE = 'manifest.json'
 ZH_MEME_FILE_NAME = 'zh_ME.lang'
 ZH_CN_FILE_NAME = 'zh_CN.lang'
+ITEM_FILE = 'item_texture.json'
+TERRAIN_FILE = 'terrain_texture.json'
 
 
 class BEPackBuilder(builder):
@@ -18,9 +21,9 @@ class BEPackBuilder(builder):
 
     def _check_args(self):
         # check essential arguments
-        for item in ('type', 'compatible', 'modules', 'output', 'hash'):
-            if item not in self.build_args:
-                return ERR_MISSING_ARGUMENT, f'Missing required argument "{item}".'
+        for arg in BE_BUILD_ARGS:
+            if arg not in self.build_args:
+                return ERR_MISSING_ARGUMENT, f'Missing required argument "{arg}".'
         return ERR_OK, 'Check passed.'
 
     def _internal_build(self):
@@ -45,19 +48,42 @@ class BEPackBuilder(builder):
         item_texture, terrain_texture = self._dump_resources(
             res_supp, pack)
         if item_texture:
-            item_texture_content = self.__merge_json(item_texture, "item")
+            item_texture_content = self.__merge_json(item_texture, ITEM_FILE)
             pack.writestr("textures/item_texture.json",
                           json.dumps(item_texture_content, indent=4))
         if terrain_texture:
             terrain_texture_content = self.__merge_json(
-                terrain_texture, "terrain")
+                terrain_texture, TERRAIN_FILE)
             pack.writestr("textures/terrain_texture.json",
                           json.dumps(terrain_texture_content, indent=4))
         pack.close()
         self._logger.append(f'Successfully built {pack_name}.')
 
-    def __merge_json(self, modules: list, type: str) -> dict:
-        name = type == "item" and "item_texture.json" or "terrain_texture.json"
+    def _dump_resources(self, modules: list, pack: ZipFile):
+        item_texture, terrain_texture = [], []
+        for item in modules:
+            base_folder = os.path.join(self.module_info['path'], item)
+            for root, _, files in os.walk(base_folder):
+                for file in files:
+                    if file not in excluded_files:
+                        if file == ITEM_FILE:
+                            item_texture.append(item)
+                        elif file == TERRAIN_FILE:
+                            terrain_texture.append(item)
+                        else:
+                            path = os.path.join(root, file)
+                            arcpath = path[path.find(
+                                base_folder) + len(base_folder) + 1:]
+                            # prevent duplicates
+                            if (testpath := arcpath.replace(os.sep, "/")) not in pack.namelist():
+                                pack.write(os.path.join(
+                                    root, file), arcname=arcpath)
+                            else:
+                                self._raise_warning(
+                                    WARN_DUPLICATED_FILE, f"Duplicated '{testpath}', skipping.")
+        return item_texture, terrain_texture
+
+    def __merge_json(self, modules: list, name: str) -> dict:
         result = {'texture_data': {}}
         for item in modules:
             texture_file = os.path.join(
@@ -73,10 +99,10 @@ class BEPackBuilder(builder):
         lang_data = ''.join(f'{k}={v}\t#\n' for k, v in self._merge_language(
             lang_data, lang_supp).items())
         if self.build_args['compatible']:
-            pack.writestr("texts/" + ZH_CN_FILE_NAME, lang_data)
+            pack.writestr(f'texts/{ZH_CN_FILE_NAME}', lang_data)
         else:
             for file in os.listdir(os.path.join(self.main_resource_path, "texts")):
                 if os.path.basename(file) != ZH_MEME_FILE_NAME:
                     pack.write(os.path.join(self.main_resource_path, f"texts/{file}"),
                                arcname=f"texts/{file}")
-            pack.writestr("texts/" + ZH_MEME_FILE_NAME, lang_data)
+            pack.writestr(f'texts/{ZH_MEME_FILE_NAME}', lang_data)

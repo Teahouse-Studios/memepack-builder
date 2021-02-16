@@ -1,5 +1,5 @@
 __all__ = [
-    'builder', 'LICENSE_FILE'
+    'builder', 'excluded_files', 'LICENSE_FILE'
 ]
 
 import json
@@ -9,7 +9,8 @@ from hashlib import sha256
 from zipfile import ZipFile
 
 _keys = 'platform', 'type', 'modules', 'mod', 'output', 'hash', 'format', 'compatible'
-excluded_file = 'add.json', 'remove.json', 'module_manifest.json'
+excluded_files = 'add.json', 'remove.json', 'module_manifest.json'
+
 LICENSE_FILE = 'LICENSE'
 
 
@@ -87,29 +88,21 @@ class builder(object):
         pass
 
     def _dump_resources(self, modules: list, pack: ZipFile):
-        item_texture = []
-        terrain_texture = []
         for item in modules:
             base_folder = os.path.join(self.module_info['path'], item)
             for root, _, files in os.walk(base_folder):
                 for file in files:
-                    if file not in excluded_file:
-                        if file == "item_texture.json":
-                            item_texture.append(item)
-                        elif file == "terrain_texture.json":
-                            terrain_texture.append(item)
+                    if file not in excluded_files:
+                        path = os.path.join(root, file)
+                        arcpath = path[path.find(
+                            base_folder) + len(base_folder) + 1:]
+                        # prevent duplicates
+                        if (testpath := arcpath.replace(os.sep, "/")) not in pack.namelist():
+                            pack.write(os.path.join(
+                                root, file), arcname=arcpath)
                         else:
-                            path = os.path.join(root, file)
-                            arcpath = path[path.find(
-                                base_folder) + len(base_folder) + 1:]
-                            # prevent duplicates
-                            if (testpath := arcpath.replace(os.sep, "/")) not in pack.namelist():
-                                pack.write(os.path.join(
-                                    root, file), arcname=arcpath)
-                            else:
-                                self._raise_warning(
-                                    WARN_DUPLICATED_FILE, f"Duplicated '{testpath}', skipping.")
-        return item_texture, terrain_texture
+                            self._raise_warning(
+                                WARN_DUPLICATED_FILE, f"Duplicated '{testpath}', skipping.")
 
     def _raise_warning(self, code: int, message: str):
         self._logger.append(f"Warning [{code}]: {message}")
