@@ -1,10 +1,11 @@
 __all__ = [
-    'builder', 'excluded_files', 'LICENSE_FILE'
+    'PackBuilder', 'excluded_files', 'LICENSE_FILE'
 ]
 
 import json
 import os
-from .err_code import *
+from .error_code import *
+from .module_classifier import *
 from hashlib import sha256
 from zipfile import ZipFile
 
@@ -18,7 +19,7 @@ def _normalize_args(args: dict):
     return {k: args[k] for k in args if k in _keys}
 
 
-class builder(object):
+class PackBuilder(object):
     '''
     Build packs.
     The builder accepts the building args, then build the packs on demand.
@@ -114,19 +115,20 @@ class builder(object):
         self._logger.append(terminate_msg)
         self._error_code = code
 
-    def _get_lists(self):
-        # get language modules
-        lang_supp = self._parse_includes("language")
+    def _get_module_lists(self):
         # get resource modules
-        res_supp = self._parse_includes("resource")
-        # get mixed modules
-        mixed_supp = self._parse_includes("mixed")
+        resources = self._get_modules("resource")
         # get module collections
-        module_collection = self._parse_includes("collection")
-        # add modules to respective list
-        self._handle_modules(res_supp, lang_supp,
-                             mixed_supp, module_collection)
-        return lang_supp, res_supp
+        collections = self._get_modules("collection")
+        # merge modules to respective lists
+        self._merge_modules(resources, collections)
+        return resources
+
+    def _get_modules_by_classifier(self, modules: list, classifier):
+        resource_info = {
+            k.pop('name'): k for k in self.module_info['modules']['resource']
+        }
+        return [module for module in modules if classifier in resource_info[module]['classifier']]
 
     def _create_dir(self):
         # mkdir
@@ -136,17 +138,16 @@ class builder(object):
             os.mkdir(self.__build_args['output'])
         return os.path.join(self.__build_args['output'], self._file_name)
 
-    def _parse_includes(self, type: str) -> list:
-        includes = self.build_args['modules'][type]
-        full_list = list(
-            map(lambda item: item['name'], self.module_info['modules'][type]))
-        if 'none' in includes:
+    def _get_modules(self, module_type: str) -> list:
+        modules = self.build_args['modules'][module_type]
+        full_list = map(lambda item: item['name'], self.module_info['modules'][module_type])
+        if 'none' in modules:
             return []
-        elif 'all' in includes:
-            return full_list
+        elif 'all' in modules:
+            return list(full_list)
         else:
             include_list = []
-            for item in includes:
+            for item in modules:
                 if item in full_list:
                     include_list.append(item)
                 else:
@@ -154,18 +155,14 @@ class builder(object):
                         WARN_MODULE_NOT_FOUND, f'Module "{item}" does not exist, skipping.')
             return include_list
 
-    def _handle_modules(self, resource_list: list, language_list: list, mixed_list: list, collection_list: list):
-        # get all resource, language and mixed modules supplied by collection
+    def _merge_modules(self, resource_list: list, collection_list: list):
         collection_info = {
-            k.pop('name'): k for k in self.module_info['modules']['collection']}
+            k.pop('name'): k for k in self.module_info['modules']['collection']
+        }
         for collection in collection_list:
-            for module_type, module_list in (('language', language_list), ('resource', resource_list), ('mixed', mixed_list)):
+            for module_type in 'resource', 'language', 'mixed':
                 if module_type in collection_info[collection]['contains']:
-                    module_list.extend(
-                        collection_info[collection]['contains'][module_type])
-        # mixed_modules go to resource and language, respectively
-        resource_list.extend(mixed_list)
-        language_list.extend(mixed_list)
+                    resource_list.extend(collection_info[collection]['contains'][module_type])
 
     def _merge_language(self, main_lang_data: dict, lang_supp: list):
         lang_data = main_lang_data
