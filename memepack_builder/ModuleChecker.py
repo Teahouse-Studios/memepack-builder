@@ -2,7 +2,10 @@ __all__ = ['ModuleChecker']
 
 import json
 import os
-from memepack_builder._internal.err_code import *
+from memepack_builder._internal.error_code import *
+from memepack_builder._internal.module_classifier import *
+
+MODULE_MANIFEST_FILE = 'module_manifest.json'
 
 
 class ModuleChecker(object):
@@ -44,14 +47,12 @@ class ModuleChecker(object):
         module_info = {
             'path': self.module_path,
             'modules': {
-                'language': [],
                 'resource': [],
-                'mixed': [],
                 'collection': []
             }
         }
         for module in os.listdir(self.module_path):
-            result = _analyze_module(
+            result = self._analyze_module(
                 os.path.join(self.module_path, module))
             if result['code'] == WARN_OK:
                 module_info['modules'][result['data'].pop(
@@ -63,36 +64,58 @@ class ModuleChecker(object):
         self.__module_info = module_info
         self.__checked = True
 
-
-def _analyze_module(path: str):
-    manifest = os.path.join(path, "module_manifest.json")
-    dir_name = os.path.basename(path)
-    if os.path.exists(manifest) and os.path.isfile(manifest):
-        data = json.load(open(manifest, 'r', encoding='utf8'))
-        for key in ('name', 'type', 'description'):
-            if key not in data:
-                return _result_msg(WARN_BROKEN_MODULE, f'In path "{dir_name}": Incomplete module_manifest.json, missing "{key}" field.')
-        if data['type'] in ('language', 'mixed'):
-            if not (os.path.exists(os.path.join(path, "add.json")) or os.path.exists(os.path.join(path, "remove.json"))):
-                return _result_msg(WARN_BROKEN_MODULE, f'In path "{dir_name}": Expected a language module, but couldn\'t find "add.json" or "remove.json".')
-        elif data['type'] == 'resource':
-            pass
-        elif data['type'] == 'collection':
-            if 'contains' not in data:
-                return _result_msg(WARN_BROKEN_MODULE, f'In path "{dir_name}": Expected a module collection, but "contains" key is missing in module_manifest.json.')
+    def _analyze_module(self, path: str):
+        manifest = os.path.join(path, MODULE_MANIFEST_FILE)
+        dir_name = os.path.basename(path)
+        if os.path.exists(manifest) and os.path.isfile(manifest):
+            data = json.load(open(manifest, 'r', encoding='utf8'))
+            for key in ('name', 'type', 'description'):
+                if key not in data:
+                    return self._result_msg(WARN_BROKEN_MODULE, f'In path "{dir_name}": Incomplete module_manifest.json, missing "{key}" field.')
+            if data['type'] in ('resource', 'language', 'mixed'):
+                if data['type'] != 'resource':
+                    self.__logger.append(f'Warning [{WARN_DEPRECATED_MODULE_TYPE}]: Module type "{data["type"]}" is deprecated, please use "resource" instead.')
+                    data['type'] = 'resource'
+                    self.__warning_count += 1
+                for func, classifier in (self._exist_resource_dirs, MODULE_MODIFIED_RESOURCE), (self._exist_language_files, MODULE_MODIFIED_LANGUAGE):
+                    if func(path):
+                        self._add_classifier(data, classifier)
+            elif data['type'] == 'collection':
+                if 'contains' not in data:
+                    return self._result_msg(WARN_BROKEN_MODULE, f'In path "{dir_name}": Expected a module collection, but "contains" key is missing in module_manifest.json.')
+                else:
+                    if 'collection' in data['contains']:
+                        return self._result_msg(WARN_LOOP_COLLECTION, f'In path "{dir_name}": Try to contain another collection in a collection.')
             else:
-                if 'collection' in data['contains']:
-                    return _result_msg(WARN_LOOP_COLLECTION, f'In path "{dir_name}": Try to contain another collection in a collection.')
+                return self._result_msg(WARN_UNKNOWN_MODULE, f'In path "{dir_name}": Unknown module type "{data["type"]}".')
+            data['dirname'] = dir_name
+            return self._result_msg(WARN_OK, "Analysis successfully finished.", data)
         else:
-            return _result_msg(WARN_UNKNOWN_MODULE, f'In path "{dir_name}": Unknown module type "{data["type"]}".')
-        data['dirname'] = dir_name
-        return _result_msg(WARN_OK, "Analysis successfully finished.", data)
-    else:
-        return _result_msg(WARN_BROKEN_MODULE, f'In path "{dir_name}": No module_manifest.json.')
+            return self._result_msg(WARN_BROKEN_MODULE, f'In path "{dir_name}": No module_manifest.json.')
 
+    def _exist_resource_dirs(self, path: str):
+        res_dir_names = 'assets', 'credits', 'models', 'textures'
+        for dir_name in res_dir_names:
+            if os.path.exists(os.path.join(path, dir_name)) and os.path.isdir(os.path.join(path, dir_name)):
+                return True
+        return False
 
-def _result_msg(code: int, message: str, data=None):
-    result = {'code': code, 'message': message}
-    if data:
-        result['data'] = data
-    return result
+    def _exist_language_files(self, path: str):
+        lang_file_names = 'add.json', 'remove.json'
+        for file_name in lang_file_names:
+            if os.path.exists(os.path.join(path, file_name)) and os.path.isfile(os.path.join(path, file_name)):
+                return True
+        return False
+
+    def _add_classifier(self, data, classifier):
+        if 'classifier' not in data:
+            data['classifier'] = [classifier]
+        else:
+            if classifier not in data['classifier']:
+                data['classifier'].append(classifier)
+
+    def _result_msg(self, code: int, message: str, data=None):
+        result = {'code': code, 'message': message}
+        if data:
+            result['data'] = data
+        return result
