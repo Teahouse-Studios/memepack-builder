@@ -8,11 +8,11 @@ memepack_builder <platform> <type> [-l <language> ...] [-r <resource> ...] [-x <
 
 **`type`** : pack type. For `je` platform, should be `normal`, `compat` or `legacy`. `legacy` implies `-f 3`. For `be` platform, should be `mcpack` or `zip`.
 
-**`-l, --language`** : language modules. Default is `none`.
+~~**`-l, --language`** : language modules. Default is `none`.~~ This option is deprecated.
 
 **`-r, --resource`** : resource modules. Default is `all`.
 
-**`-x, --mixed`** : mixed modules. Default is `none`.
+~~**`-x, --mixed`** : mixed modules. Default is `none`.~~ This option is deprecated.
 
 **`-c, --collection`** : collection modules. Default is `none`.
 

@@ -18,7 +18,7 @@ This package can be invoked by other Python programs, or run from command line i
 
 ### Used as library
 
-The package provides four classes: `PlatformChecker`, `ModuleChecker`, `JEPackBuilder` and `BEPackBuilder`. In a simple build (which is the most case), just import one of the two builders, and call `build()`. The build log is stored as a list in the builder's `build_log` property. Use `'\n'.join()` if you prefer string.
+The package provides four classes: `PlatformChecker`, `ModuleChecker`, `JEPackBuilder` and `BEPackBuilder`. In a simple build (which is the most case), just import the module checker and one of the two builders, and call `build()`. The build log is stored as a list in the builder's `build_log` property. Use `'\n'.join()` if you prefer string.
 
 ### Used in CLI
 

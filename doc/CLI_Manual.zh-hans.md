@@ -8,11 +8,11 @@ memepack_builder <platform> <type> [-l <language> ...] [-r <resource> ...] [-x <
 
 **`type`**：资源包类型。在`je`上应当是`normal`、`compat`或`legacy`。`legacy`也指定了`-f 3`。在`be`上应当是`mcpack`或`zip`。
 
-**`-l, --language`**：语言模块。默认是`none`。
+~~**`-l, --language`**：语言模块。默认是`none`。~~ 此选项已弃用。
 
 **`-r, --resource`**：资源模块。默认是`all`。
 
-**`-x, --mixed`**：混合模块。默认是`none`。
+~~**`-x, --mixed`**：混合模块。默认是`none`。~~ 此选项已弃用。
 
 **`-c, --collection`**：集合模块。默认是`none`。
 

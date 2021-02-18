@@ -16,7 +16,7 @@
 
 ### 作为运行库
 
-此包对外提供四个类：`PlatformChecker`、`ModuleChecker`、`JEPackBuilder`和`BEPackBuilder`。在简单情形（也是大多数情形）下，只需要导入后两个builder中需要的那个，然后调用`build()`方法。构建的日志以列表形式存放在builder的`build_log`属性内。如果需要字符串形式，请使用`'\n'.join()`。
+此包对外提供四个类：`PlatformChecker`、`ModuleChecker`、`JEPackBuilder`和`BEPackBuilder`。在简单情形（也是大多数情形）下，只需要导入module checker和后两个builder中需要的那个，然后调用`build()`方法。构建的日志以列表形式存放在builder的`build_log`属性内。如果需要字符串形式，请使用`'\n'.join()`。
 
 ### 在命令行内
 
