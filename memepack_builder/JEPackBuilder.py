@@ -4,8 +4,9 @@ __all__ = [
 import json
 import os
 from zipfile import ZipFile, ZIP_DEFLATED
-from memepack_builder._internal.builder import builder, LICENSE_FILE
-from memepack_builder._internal.err_code import *
+from memepack_builder._internal.pack_builder import PackBuilder, LICENSE_FILE
+from memepack_builder._internal.error_code import *
+from memepack_builder._internal.module_classifier import *
 
 
 PACK_LEGACY_FORMAT = 3
@@ -34,7 +35,7 @@ def _get_lang_filename(type: str) -> str:
         return ''
 
 
-class JEPackBuilder(builder):
+class JEPackBuilder(PackBuilder):
     def __init__(self, main_res_path: str, module_info: dict, mods_path: str, legacy_mapping_path: str):
         super().__init__(main_res_path, module_info)
         self.__mods_path = mods_path
@@ -52,7 +53,7 @@ class JEPackBuilder(builder):
         args = self.build_args
         # check essential arguments
         for arg in JE_BUILD_ARGS:
-            if arg not in self.build_args:
+            if arg not in args:
                 return ERR_MISSING_ARGUMENT, f'Missing required argument "{arg}".'
         # check "format"
         if 'format' not in args or args['format'] is None:
@@ -69,7 +70,8 @@ class JEPackBuilder(builder):
     def _internal_build(self):
         args = self.build_args
         # process args
-        lang_supp, res_supp = self._get_lists()
+        resource_modules = self._get_module_lists()
+        lang_supp = self._get_modules_by_classifier(resource_modules, MODULE_MODIFIED_LANGUAGE)
         # get mods strings
         mod_supp = self.__parse_mods()
         # merge language supplement
@@ -113,7 +115,7 @@ class JEPackBuilder(builder):
             pack.writestr(GAME_LANG_FILE_PATH + lang_file_name,
                           self.__generate_legacy_content(main_lang_data))
         # dump resources
-        self._dump_resources(res_supp, pack)
+        self._dump_resources(resource_modules, pack)
         pack.close()
         self._logger.append(f"Successfully built {pack_name}.")
 

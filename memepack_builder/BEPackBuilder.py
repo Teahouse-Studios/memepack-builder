@@ -3,8 +3,9 @@ __all__ = ['BEPackBuilder']
 import json
 import os
 from zipfile import ZipFile, ZIP_DEFLATED
-from memepack_builder._internal.builder import *
-from memepack_builder._internal.err_code import *
+from memepack_builder._internal.pack_builder import PackBuilder, LICENSE_FILE, excluded_files
+from memepack_builder._internal.error_code import *
+from memepack_builder._internal.module_classifier import *
 
 BE_BUILD_ARGS = 'type', 'compatible', 'modules', 'output', 'hash'
 PACK_ICON_FILE = 'pack_icon.png'
@@ -15,7 +16,7 @@ ITEM_FILE = 'item_texture.json'
 TERRAIN_FILE = 'terrain_texture.json'
 
 
-class BEPackBuilder(builder):
+class BEPackBuilder(PackBuilder):
     def __init__(self, main_res_path: str, module_info: dict):
         super().__init__(main_res_path, module_info)
 
@@ -28,7 +29,9 @@ class BEPackBuilder(builder):
 
     def _internal_build(self):
         args = self.build_args
-        lang_supp, res_supp = self._get_lists()
+        resource_modules = self._get_module_lists()
+        lang_supp = self._get_modules_by_classifier(
+            resource_modules, MODULE_MODIFIED_LANGUAGE)
         self._file_name = args['hash'] and f"meme-resourcepack.{self._digest[:7]}.{args['type']}" or f"meme-resourcepack.{args['type']}"
         # create pack
         pack_name = self._create_dir()
@@ -46,7 +49,7 @@ class BEPackBuilder(builder):
                    arcname="textures/map/map_background.png")
         # dump resources
         item_texture, terrain_texture = self._dump_resources(
-            res_supp, pack)
+            resource_modules, pack)
         if item_texture:
             item_texture_content = self.__merge_json(item_texture, ITEM_FILE)
             pack.writestr("textures/item_texture.json",
