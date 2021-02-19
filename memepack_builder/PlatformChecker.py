@@ -1,7 +1,7 @@
 __all__ = ['PlatformChecker']
 
 import os
-from memepack_builder._internal.err_code import *
+from memepack_builder._internal.error_code import *
 
 
 class PlatformChecker(object):

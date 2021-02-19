@@ -1,4 +1,4 @@
-from .err_code import *
+from .error_code import *
 from argparse import ArgumentParser
 import os
 
