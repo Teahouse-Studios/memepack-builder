@@ -88,7 +88,7 @@ class PackBuilder(object):
         # virtual method, need to be overriden
         pass
 
-    def _dump_resources(self, modules: list, pack: ZipFile):
+    def _dump_resources(self, pack: ZipFile, *modules):
         for item in modules:
             base_folder = os.path.join(self.module_info['path'], item)
             for root, _, files in os.walk(base_folder):
@@ -121,10 +121,10 @@ class PackBuilder(object):
         # get module collections
         collections = self._get_modules("collection")
         # merge modules to respective lists
-        self._merge_modules(resources, collections)
+        self._merge_modules(resources, *collections)
         return resources
 
-    def _get_modules_by_classifier(self, modules: list, classifier):
+    def _get_modules_by_classifier(self, classifier, *modules):
         resource_info = {
             k.pop('name'): k for k in self.module_info['modules']['resource']
         }
@@ -140,7 +140,8 @@ class PackBuilder(object):
 
     def _get_modules(self, module_type: str) -> list:
         modules = self.build_args['modules'][module_type]
-        full_list = map(lambda item: item['name'], self.module_info['modules'][module_type])
+        full_list = map(lambda item: item['name'],
+                        self.module_info['modules'][module_type])
         if 'none' in modules:
             return []
         elif 'all' in modules:
@@ -155,16 +156,17 @@ class PackBuilder(object):
                         WARN_MODULE_NOT_FOUND, f'Module "{item}" does not exist, skipping.')
             return include_list
 
-    def _merge_modules(self, resource_list: list, collection_list: list):
+    def _merge_modules(self, resource_list: list, *collection_list):
         collection_info = {
             k.pop('name'): k for k in self.module_info['modules']['collection']
         }
         for collection in collection_list:
             for module_type in 'resource', 'language', 'mixed':
                 if module_type in collection_info[collection]['contains']:
-                    resource_list.extend(collection_info[collection]['contains'][module_type])
+                    resource_list.extend(
+                        collection_info[collection]['contains'][module_type])
 
-    def _merge_language(self, main_lang_data: dict, lang_supp: list):
+    def _merge_language(self, main_lang_data: dict, *lang_supp):
         lang_data = main_lang_data
         module_path = self.module_info['path']
         for item in lang_supp:

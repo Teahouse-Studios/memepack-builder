@@ -71,7 +71,8 @@ class JEPackBuilder(PackBuilder):
         args = self.build_args
         # process args
         resource_modules = self._get_module_lists()
-        lang_supp = self._get_modules_by_classifier(resource_modules, MODULE_MODIFIED_LANGUAGE)
+        lang_supp = self._get_modules_by_classifier(
+            MODULE_MODIFIED_LANGUAGE, *resource_modules)
         # get mods strings
         mod_supp = self.__parse_mods()
         # merge language supplement
@@ -79,7 +80,7 @@ class JEPackBuilder(PackBuilder):
         main_lang_data = json.load(open(os.path.join(self.main_resource_path,
                                                      GAME_LANG_FILE_PATH, ZH_MEME_FILE_NAME), 'r', encoding='utf8'))
         main_lang_data = self._merge_language(
-            main_lang_data, lang_supp) | self.__get_mod_content(mod_supp)
+            main_lang_data, *lang_supp) | self.__get_mod_content(*mod_supp)
         # get realms strings
         realms_lang_data = json.load(open(os.path.join(
             self.main_resource_path, REALMS_LANG_FILE_PATH, ZH_MEME_FILE_NAME), 'r', encoding='utf8'))
@@ -115,7 +116,7 @@ class JEPackBuilder(PackBuilder):
             pack.writestr(GAME_LANG_FILE_PATH + lang_file_name,
                           self.__generate_legacy_content(main_lang_data))
         # dump resources
-        self._dump_resources(resource_modules, pack)
+        self._dump_resources(pack, *resource_modules)
         pack.close()
         self._logger.append(f"Successfully built {pack_name}.")
 
@@ -148,9 +149,9 @@ class JEPackBuilder(PackBuilder):
                         WARN_MOD_NOT_FOUND, f'Mod file "{item}" does not exist, skipping.')
             return mods_list
 
-    def __get_mod_content(self, mod_list: list) -> dict:
+    def __get_mod_content(self, *mod_files) -> dict:
         mods = {}
-        for file in mod_list:
+        for file in mod_files:
             if file.endswith(".json"):
                 mods |= json.load(
                     open(os.path.join(self.mods_path, file), 'r', encoding='utf8'))

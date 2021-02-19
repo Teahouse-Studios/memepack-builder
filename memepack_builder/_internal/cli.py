@@ -6,13 +6,15 @@ import os
 def verify_args(args, log):
     for k in ('platform', 'type', 'output', 'hash'):
         if k not in args:
-            _raise_error(ERR_MISSING_ARGUMENT, f'Missing required argument "{k}".', log)
+            _raise_error(ERR_MISSING_ARGUMENT,
+                         f'Missing required argument "{k}".', log)
             return False
     return True
 
 
 def generate_parser():
-    parser = ArgumentParser(prog='memepack_builder', description='Build memefied Minecraft resource pack')
+    parser = ArgumentParser(prog='memepack_builder',
+                            description='Build memefied Minecraft resource pack')
     parser.add_argument('platform', default='je', choices=(
         'je', 'be'), help='Which platform the pack is targeting. Should be "je" or "be". Default value is "je".')
     parser.add_argument('type', default='normal', choices=('normal', 'compat', 'legacy', 'mcpack', 'zip'),

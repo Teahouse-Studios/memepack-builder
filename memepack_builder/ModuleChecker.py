@@ -74,7 +74,8 @@ class ModuleChecker(object):
                     return self._result_msg(WARN_BROKEN_MODULE, f'In path "{dir_name}": Incomplete module_manifest.json, missing "{key}" field.')
             if data['type'] in ('resource', 'language', 'mixed'):
                 if data['type'] != 'resource':
-                    self.__logger.append(f'Warning [{WARN_DEPRECATED_MODULE_TYPE}]: Module type "{data["type"]}" is deprecated, please use "resource" instead.')
+                    self.__logger.append(
+                        f'Warning [{WARN_DEPRECATED_MODULE_TYPE}]: Module type "{data["type"]}" is deprecated, please use "resource" instead.')
                     data['type'] = 'resource'
                     self.__warning_count += 1
                 for func, classifier in (self._exist_resource_dirs, MODULE_MODIFIED_RESOURCE), (self._exist_language_files, MODULE_MODIFIED_LANGUAGE):

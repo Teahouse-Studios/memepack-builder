@@ -31,7 +31,7 @@ class BEPackBuilder(PackBuilder):
         args = self.build_args
         resource_modules = self._get_module_lists()
         lang_supp = self._get_modules_by_classifier(
-            resource_modules, MODULE_MODIFIED_LANGUAGE)
+            MODULE_MODIFIED_LANGUAGE, *resource_modules)
         self._file_name = args['hash'] and f"meme-resourcepack.{self._digest[:7]}.{args['type']}" or f"meme-resourcepack.{args['type']}"
         # create pack
         pack_name = self._create_dir()
@@ -44,25 +44,25 @@ class BEPackBuilder(PackBuilder):
                    arcname=PACK_ICON_FILE)
         pack.write(os.path.join(self.main_resource_path, PACK_MANIFEST_FILE),
                    arcname=PACK_MANIFEST_FILE)
-        self.__dump_language_file(pack, lang_supp)
+        self.__dump_language_file(pack, *lang_supp)
         pack.write(os.path.join(self.main_resource_path, "textures/map/map_background.png"),
                    arcname="textures/map/map_background.png")
         # dump resources
         item_texture, terrain_texture = self._dump_resources(
-            resource_modules, pack)
+            pack, *resource_modules)
         if item_texture:
-            item_texture_content = self.__merge_json(item_texture, ITEM_FILE)
+            item_texture_content = self.__merge_json(ITEM_FILE, *item_texture)
             pack.writestr("textures/item_texture.json",
                           json.dumps(item_texture_content, indent=4))
         if terrain_texture:
             terrain_texture_content = self.__merge_json(
-                terrain_texture, TERRAIN_FILE)
+                TERRAIN_FILE, *terrain_texture)
             pack.writestr("textures/terrain_texture.json",
                           json.dumps(terrain_texture_content, indent=4))
         pack.close()
         self._logger.append(f'Successfully built {pack_name}.')
 
-    def _dump_resources(self, modules: list, pack: ZipFile):
+    def _dump_resources(self, pack: ZipFile, *modules):
         item_texture, terrain_texture = [], []
         for item in modules:
             base_folder = os.path.join(self.module_info['path'], item)
@@ -86,7 +86,7 @@ class BEPackBuilder(PackBuilder):
                                     WARN_DUPLICATED_FILE, f"Duplicated '{testpath}', skipping.")
         return item_texture, terrain_texture
 
-    def __merge_json(self, modules: list, name: str) -> dict:
+    def __merge_json(self, name: str, *modules) -> dict:
         result = {'texture_data': {}}
         for item in modules:
             texture_file = os.path.join(
@@ -95,7 +95,7 @@ class BEPackBuilder(PackBuilder):
             result['texture_data'] |= content['texture_data']
         return result
 
-    def __dump_language_file(self, pack: ZipFile, lang_supp: list):
+    def __dump_language_file(self, pack: ZipFile, *lang_supp):
         with open(os.path.join(self.main_resource_path, "texts", ZH_MEME_FILE_NAME), 'r', encoding='utf8') as f:
             lang_data = dict(line[:line.find('#') - 1].strip().split("=", 1)
                              for line in f if line.strip() != '' and not line.startswith('#'))
