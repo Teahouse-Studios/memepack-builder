@@ -73,14 +73,20 @@ class ModuleChecker(object):
                 if key not in data:
                     return self._result_msg(WARN_BROKEN_MODULE, f'In path "{dir_name}": Incomplete module_manifest.json, missing "{key}" field.')
             if data['type'] in ('resource', 'language', 'mixed'):
+                # some compatibility, planned to remove in 0.3.0
                 if data['type'] != 'resource':
-                    self.__logger.append(
-                        f'Warning [{WARN_DEPRECATED_MODULE_TYPE}]: Module type "{data["type"]}" is deprecated, please use "resource" instead.')
+                    self._raise_warning(WARN_DEPRECATED_MODULE_TYPE, f'Module type "{data["type"]}" is deprecated, please use "resource" instead.')
                     data['type'] = 'resource'
-                    self.__warning_count += 1
-                for func, classifier in (self._exist_resource_dirs, MODULE_MODIFIED_RESOURCE), (self._exist_language_files, MODULE_MODIFIED_LANGUAGE):
+                for func, classifier, modified_type in (self._exist_resource_dirs, MODULE_MODIFIED_RESOURCE, 'resource'), (self._exist_language_files, MODULE_MODIFIED_LANGUAGE, 'language'):
                     if func(path):
-                        self._add_classifier(data, classifier)
+                        def add_classifier(data, classifier):
+                            if 'classifier' not in data:
+                                self._raise_warning(WARN_MISSING_CLASSIFIER, f'In path "{dir_name}": Module modified {modified_type}, but cannot find corresponding classifier.')
+                                data['classifier'] = [classifier]
+                            elif classifier not in data['classifier']:
+                                self._raise_warning(WARN_MISSING_CLASSIFIER, f'In path "{dir_name}": Module modified {modified_type}, but cannot find corresponding classifier.')
+                                data['classifier'].append(classifier)
+                        add_classifier(data, classifier)
             elif data['type'] == 'collection':
                 if 'contains' not in data:
                     return self._result_msg(WARN_BROKEN_MODULE, f'In path "{dir_name}": Expected a module collection, but "contains" key is missing in module_manifest.json.')
@@ -108,15 +114,12 @@ class ModuleChecker(object):
                 return True
         return False
 
-    def _add_classifier(self, data, classifier):
-        if 'classifier' not in data:
-            data['classifier'] = [classifier]
-        else:
-            if classifier not in data['classifier']:
-                data['classifier'].append(classifier)
-
     def _result_msg(self, code: int, message: str, data=None):
         result = {'code': code, 'message': message}
         if data:
             result['data'] = data
         return result
+
+    def _raise_warning(self, code: int, message: str):
+        self.__logger.append(f'Warning [{code}]: {message}')
+        self.__warning_count += 1
