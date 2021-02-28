@@ -5,7 +5,7 @@ with open('README.md', 'r', encoding='utf8') as fh:
 
 setuptools.setup(
     name="memepack_builder",
-    version="0.2.0",
+    version="0.2.1",
     author="MysticNebula70",
     author_email="mysticnebula70@teahou.se",
     description="A tool for packaging Memefied Chinese resource pack",
