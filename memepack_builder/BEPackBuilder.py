@@ -100,7 +100,7 @@ class BEPackBuilder(PackBuilder):
             lang_data = dict(line[:line.find('#') - 1].strip().split("=", 1)
                              for line in f if line.strip() != '' and not line.startswith('#'))
         lang_data = ''.join(f'{k}={v}\t#\n' for k, v in self._merge_language(
-            lang_data, lang_supp).items())
+            lang_data, *lang_supp).items())
         if self.build_args['compatible']:
             pack.writestr(f'texts/{ZH_CN_FILE_NAME}', lang_data)
         else:
