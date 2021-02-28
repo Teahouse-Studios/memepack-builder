@@ -121,8 +121,7 @@ class PackBuilder(object):
         # get module collections
         collections = self._get_modules("collection")
         # merge modules to respective lists
-        self._merge_modules(resources, *collections)
-        return resources
+        return self._merge_modules(resources, *collections)
 
     def _get_modules_by_classifier(self, classifier, *modules):
         resource_info = {
@@ -160,11 +159,10 @@ class PackBuilder(object):
         collection_info = {
             k.pop('name'): k for k in self.module_info['modules']['collection']
         }
+        temp_set = {*resource_list}
         for collection in collection_list:
-            for module_type in 'resource', 'language', 'mixed':
-                if module_type in collection_info[collection]['contains']:
-                    resource_list.extend(
-                        collection_info[collection]['contains'][module_type])
+            temp_set.update(collection_info[collection]['contains'])
+        return [*temp_set]
 
     def _merge_language(self, main_lang_data: dict, *lang_supp):
         lang_data = main_lang_data
