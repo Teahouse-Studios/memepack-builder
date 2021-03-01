@@ -18,15 +18,11 @@ def generate_parser():
     parser.add_argument('platform', default='je', choices=(
         'je', 'be'), help='Which platform the pack is targeting. Should be "je" or "be". Default value is "je".')
     parser.add_argument('type', default='normal', choices=('normal', 'compat', 'legacy', 'mcpack', 'zip'),
-                        help='Build type. Depending on "platform" argument, this argument takes different values. For "je", "normal", "compat" and "legacy" are accepted; for "be", "mcpack" and "zip" are accepted. When is "legacy", implies "--format 3".')
-    parser.add_argument('-r', '--resource', nargs='*', default='all',
+                        help='Build type. Depending on "platform" argument, this argument takes different values. For "je": "normal", "compat" and "legacy" are accepted; for "be": "mcpack" and "zip" are accepted. When is "legacy", implies "--format 3".')
+    parser.add_argument('-r', '--resource', nargs='*', default='none',
                         help="(Experimental) Include resource modules. Should be module names, 'all' or 'none'. Defaults to 'all'.")
-    parser.add_argument('-l', '--language', nargs='*', default='none',
-                        help="(Experimental) Include language modules. Should be module names, 'all' or 'none'. Defaults to 'none'.")
-    parser.add_argument('-x', '--mixed', nargs='*', default='none',
-                        help="(Experimental) Include mixed modules. Should be module names, 'all' or 'none'. Defaults to 'none'.")
     parser.add_argument('-s', '--sfw', action='store_true',
-                        help="Use 'suitable for work' strings, equals to '--language sfw'.")
+                        help="Use 'suitable for work' strings, equals to '--resource lang_sfw'.")
     parser.add_argument('-c', '--collection', nargs='*', default='none',
                         help="(Experimental) Include module collections. Should be module names, 'all' or 'none'. Defaults to 'none'.")
     parser.add_argument('-m', '--mod', nargs='*', default='none',
@@ -43,10 +39,10 @@ def generate_parser():
 
 
 def process_args(args):
-    module_types = ('resource', 'language', 'mixed', 'collection')
+    module_types = 'resource', 'collection'
     args['modules'] = {key: args.pop(key) for key in module_types}
     if args['sfw'] and 'sfw' not in args['modules']['language']:
-        args['modules']['language'].append('sfw')
+        args['modules']['resource'].append('lang_sfw')
     return args
 
 
