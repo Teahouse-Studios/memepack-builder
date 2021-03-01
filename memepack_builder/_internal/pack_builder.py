@@ -139,12 +139,12 @@ class PackBuilder(object):
 
     def _get_modules(self, module_type: str) -> list:
         modules = self.build_args['modules'][module_type]
-        full_list = map(lambda item: item['name'],
-                        self.module_info['modules'][module_type])
+        full_list = [*map(lambda item: item['name'],
+                        self.module_info['modules'][module_type])]
         if 'none' in modules:
             return []
         elif 'all' in modules:
-            return list(full_list)
+            return full_list
         else:
             include_list = []
             for item in modules:
