@@ -1,0 +1,154 @@
+{
+    "$schema": "http://json-schema.org/schema",
+    "title": "module_manifest.json schema",
+    "description": "This schema file provides schema for module_manifest.json.",
+    "examples": [
+        {
+            "name": "Example Resource",
+            "type": "resource",
+            "description": "Example resource description",
+            "author": [
+                "John Doe"
+            ],
+            "incompatible_with": [
+                "Not Compatible 1",
+                "Not Compatible 2"
+            ],
+            "classifier": [
+                "modified_language",
+                "modified_resource"
+            ]
+        },
+        {
+            "name": "Example Collection",
+            "type": "collection",
+            "description": "Example collection description",
+            "author": [
+                "John Smith",
+                "Jane Doe"
+            ],
+            "contains": [
+                "Collection Item 1",
+                "Collection Item 2"
+            ]
+        }
+    ],
+    "type": "object",
+    "properties": {
+        "name": {
+            "type": "string"
+        },
+        "type": {
+            "enum": [
+                "resource",
+                "collection"
+            ]
+        },
+        "description": {
+            "type": "string"
+        },
+        "author": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "minItems": 1,
+            "uniqueItems": true
+        },
+        "incompatible_with": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "minItems": 1,
+            "uniqueItems": true
+        },
+        "classifier": {
+            "type": "array",
+            "items": {
+                "enum": [
+                    "modified_resource",
+                    "modified_language"
+                ]
+            },
+            "minItems": 1,
+            "uniqueItems": true
+        },
+        "contains": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "minItems": 1,
+            "uniqueItems": true
+        }
+    },
+    "required": [
+        "name",
+        "type",
+        "description",
+        "author"
+    ],
+    "dependencies": {
+        "incompatible_with": {
+            "properties": {
+                "type": {
+                    "const": "resource"
+                }
+            },
+            "required": [
+                "type"
+            ]
+        },
+        "contains": {
+            "properties": {
+                "type": {
+                    "const": "collection"
+                }
+            },
+            "required": [
+                "type"
+            ]
+        },
+        "classifier": {
+            "properties": {
+                "type": {
+                    "const": "resource"
+                }
+            },
+            "required": [
+                "type"
+            ]
+        }
+    },
+    "allOf": [
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "collection"
+                    }
+                }
+            },
+            "then": {
+                "required": [
+                    "contains"
+                ]
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "resource"
+                    }
+                }
+            },
+            "then": {
+                "required": [
+                    "classifier"
+                ]
+            }
+        }
+    ]
+}
