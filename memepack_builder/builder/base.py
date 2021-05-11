@@ -51,7 +51,7 @@ class PackBuilder(object):
         valid_modules = tuple(
             map(lambda item: item['name'], self.module_overview['modules']['resource']))
 
-        name = str(self.options['output'])
+        name = self.options['output']
         if (self.options['hash']):
             hash = sha256(json.dumps(self.options)).hexdigest()[:7]
             name = re.sub(r'\.(\w+)$', rf'.{hash}.\1', name)
