@@ -6,103 +6,94 @@ REMOVE_FILE = 'remove.json'
 MAPPING_FILE = 'all_mappings'
 
 
+def generate_json(file_path: str, with_modules: bool, module_overview, modules: list[str], mod_files: list[str]):
+    gen = LanguageFileGenerator(file_path, module_overview, modules, mod_files)
+    content = gen.generate_json(with_modules)
+    return {'content': content, 'log': gen.log}
+
+
+def generate_java_legacy(file_path: str, with_modules: bool, module_overview, modules: list[str], mod_files: list[str]):
+    gen = LanguageFileGenerator(file_path, module_overview, modules, mod_files)
+    content = gen.generate_java_legacy(with_modules)
+    return {'content': content, 'log': gen.log}
+
+
+def generate_bedrock(file_path: str, with_modules: bool, module_overview, modules: list[str], mod_files: list[str]):
+    gen = LanguageFileGenerator(file_path, module_overview, modules, mod_files)
+    content = gen.generate_bedrock(with_modules)
+    return {'content': content, 'log': gen.log}
+
+
 class LanguageFileGenerator(object):
-    def __init__(self, main_language_path) -> None:
+    def __init__(self, main_language_path: str, module_overview, modules: list[str] = None, mod_files: list[str] = None):
         super().__init__()
-        self._main = main_language_path
-        self._additional_path = []
-        self._additional_content = []
-        self._prefix = ''
-        self._log = []
+        self._main_language_path = main_language_path
+        self._module_overview = module_overview
+        self._modules = modules or []
+        self._mod_files = mod_files or []
+        self.log = []
 
-    @property
-    def additional_path(self):
-        return self._additional_path
+    def _append_log(self, *entry):
+        self.log.extend(entry)
 
-    @additional_path.setter
-    def additional_path(self, value: list):
-        self._additional_path = value
+    def get_content(self):
+        content = {}
+        with open(self._main_language_path, 'r', encoding='utf8') as fp:
+            if self._main_language_path.endswith('.json'):
+                content = json.load(fp)
+            elif self._main_language_path.endswith('.lang'):
+                content = self.lang_to_json(fp.read())
+        return content
 
-    @property
-    def additional_content(self):
-        return self._additional_content
-
-    @additional_content.setter
-    def additional_content(self, value: list):
-        self._additional_content = value
-
-    @property
-    def common_prefix(self):
-        return self._prefix
-
-    @common_prefix.setter
-    def common_prefix(self, value: str):
-        self._prefix = value
-
-    @property
-    def log(self):
-        return self._log
-
-    def merge_language(self):
-        if self._main.endswith('.lang'):
-            main_data = self.read_legacy_file()
-        else:
-            main_data = json.load(open(self._main, 'r', encoding='utf8'))
-        for item in self._additional_path:
-            add_file = os.path.join(self._prefix, item, ADD_FILE)
-            remove_file = os.path.join(self._prefix, item, REMOVE_FILE)
+    def merge_modules(self, content: dict):
+        module_path = self._module_overview['modulePath'] or ''
+        for module in self._modules:
+            add_file = os.path.join(module_path, module, ADD_FILE)
             if os.path.exists(add_file):
-                main_data |= json.load(open(add_file, 'r', encoding='utf8'))
+                content |= json.load(open(add_file, 'r', encoding='utf8'))
+            remove_file = os.path.join(module_path, module, REMOVE_FILE)
             if os.path.exists(remove_file):
                 for key in json.load(open(remove_file, 'r', encoding='utf8')):
-                    if key in main_data:
-                        main_data.pop(key)
+                    if key in content:
+                        content.pop(key)
                     else:
-                        self._log.append(
+                        self.log.append(
                             f'Key "{key}" does not exist, skipping.')
-        for item in self._additional_content:
-            main_data |= item
-        return main_data
+        return content
 
-    def read_legacy_file(self):
-        with open(self._main, 'r', encoding='utf8') as f:
-            return dict(line[:line.find('#') - 1].strip().split("=", 1)
-                        for line in f if line.strip() != '' and not line.startswith('#'))
+    def merge_mods(self, content: dict):
+        for mod in self._mod_files:
+            mod_content = {}
+            with open(mod, 'r', encoding='utf8') as fp:
+                if mod.endswith('json'):
+                    mod_content = json.load(fp)
+                if mod.endswith('lang'):
+                    mod_content = self.lang_to_json(fp.read())
+            for k, v in mod_content.items():
+                content[k] = v
+        return content
 
+    def generate_json(self, with_modules: bool):
+        content = self.get_content()
+        if with_modules:
+            content = self.merge_modules(content)
+        return json.dumps(content, ensure_ascii=True, indent=4)
 
-class LegacyLanguageFileGenerator(LanguageFileGenerator):
-    def __init__(self, main_language_path, mapping_path=None) -> None:
-        super().__init__(main_language_path)
-        self._mapping = mapping_path or ''
+    def generate_java_legacy(self, with_modules: bool):
+        content = self.get_content()
+        if with_modules:
+            content = self.merge_modules(content)
+        return self.json_to_lang(content)
 
-    def generate_legacy(self):
-        if self._mapping:
-            return self._generate_legacy_with_mapping()
-        else:
-            return self._generate_legacy_without_mapping()
+    def generate_bedrock(self, with_modules: bool):
+        content = self.get_content()
+        if with_modules:
+            content = self.merge_modules(content)
+        return self.json_to_lang(content).replace('\n', '\t#\n')
 
-    def _generate_legacy_with_mapping(self):
-        # this method is used primarily with je
-        mappings = json.load(open(os.path.join(self._mapping,
-                                               MAPPING_FILE), 'r', encoding='utf8'))
-        legacy_data = {}
-        content = self.merge_language()
-        for item in mappings:
-            if (mapping_file := f"{item}.json") not in os.listdir(self._mapping):
-                self._log.append(
-                    f'Missing mapping "{mapping_file}", skipping.')
-            else:
-                mapping = json.load(
-                    open(os.path.join(self._mapping, mapping_file), 'r', encoding='utf8'))
-                for k, v in mapping.items():
-                    if v not in content:
-                        self._log.append(
-                            f'In file "{mapping_file}": Corrupted key-value pair {{"{k}": "{v}"}}.')
-                    else:
-                        legacy_data[k] = content[v]
-        return ''.join(f'{k}={v}\n' for k, v in legacy_data.items())
+    def lang_to_json(self, object: str):
+        return dict(line[:line.find('#') - 1].strip().split('=', 1)
+                    for line in object.splitlines() if line.strip() != '' and not line.startswith('#'))
 
-    def _generate_legacy_without_mapping(self):
-        # this method is used primarily with be
-        content = self.merge_language()
-        return ''.join(f'{k}={v}\t#\n' for k, v in content.items())
+    def json_to_lang(self, object: dict):
+        return ''.join(f'{k}={v}\n' for k, v in object.items())

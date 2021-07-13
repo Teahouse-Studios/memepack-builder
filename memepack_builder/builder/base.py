@@ -41,8 +41,8 @@ class PackBuilder(object):
     def module_overview(self):
         return self.__module_overview
 
-    def _append_log(self, entry):
-        self.log.append(entry)
+    def _append_log(self, *entry):
+        self.log.extend(entry)
 
     def build(self, extra_files: list = [], extra_content: dict = {}, excluded_files: list = []):
         excluded_files.extend(

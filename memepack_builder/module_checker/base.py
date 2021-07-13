@@ -18,8 +18,8 @@ class ModuleChecker(object):
     def module_overview(self):
         return self.validate_modules()
 
-    def _append_log(self, entry):
-        self.log.append(entry)
+    def _append_log(self, *entry):
+        self.log.extend(entry)
 
     def validate_modules(self):
         overview = {
