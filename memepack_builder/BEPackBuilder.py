@@ -10,6 +10,7 @@ from memepack_builder._internal.module_classifier import *
 BE_BUILD_ARGS = 'type', 'compatible', 'modules', 'output', 'hash'
 PACK_ICON_FILE = 'pack_icon.png'
 PACK_MANIFEST_FILE = 'manifest.json'
+LOADING_MESSAGES_FILE = 'loading_messages.json'
 ZH_MEME_FILE_NAME = 'zh_ME.lang'
 ZH_CN_FILE_NAME = 'zh_CN.lang'
 ITEM_FILE = 'item_texture.json'
@@ -44,6 +45,8 @@ class BEPackBuilder(PackBuilder):
                    arcname=PACK_ICON_FILE)
         pack.write(os.path.join(self.main_resource_path, PACK_MANIFEST_FILE),
                    arcname=PACK_MANIFEST_FILE)
+        pack.write(os.path.join(self.main_resource_path, LOADING_MESSAGES_FILE),
+                   arcname=LOADING_MESSAGES_FILE)
         self.__dump_language_file(pack, *lang_supp)
         # dump resources
         item_texture, terrain_texture = self._dump_resources(
