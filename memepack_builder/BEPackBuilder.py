@@ -45,8 +45,6 @@ class BEPackBuilder(PackBuilder):
         pack.write(os.path.join(self.main_resource_path, PACK_MANIFEST_FILE),
                    arcname=PACK_MANIFEST_FILE)
         self.__dump_language_file(pack, *lang_supp)
-        pack.write(os.path.join(self.main_resource_path, "textures/map/map_background.png"),
-                   arcname="textures/map/map_background.png")
         # dump resources
         item_texture, terrain_texture = self._dump_resources(
             pack, *resource_modules)
