@@ -8,12 +8,6 @@ from memepack_builder._internal.error_code import *
 from memepack_builder._internal.module_classifier import *
 
 BE_BUILD_ARGS = 'type', 'compatible', 'modules', 'output', 'hash'
-PACK_ICON_FILE = 'pack_icon.png'
-PACK_MANIFEST_FILE = 'manifest.json'
-ZH_MEME_FILE_NAME = 'zh_ME.lang'
-ZH_CN_FILE_NAME = 'zh_CN.lang'
-ITEM_FILE = 'item_texture.json'
-TERRAIN_FILE = 'terrain_texture.json'
 
 
 class BEPackBuilder(PackBuilder):
@@ -40,21 +34,23 @@ class BEPackBuilder(PackBuilder):
             pack_name, 'w', compression=ZIP_DEFLATED, compresslevel=5)
         pack.write(os.path.join(self.main_resource_path,
                                 LICENSE_FILE), arcname=LICENSE_FILE)
-        pack.write(os.path.join(self.main_resource_path, PACK_ICON_FILE),
-                   arcname=PACK_ICON_FILE)
-        pack.write(os.path.join(self.main_resource_path, PACK_MANIFEST_FILE),
-                   arcname=PACK_MANIFEST_FILE)
+        pack.write(os.path.join(self.main_resource_path, "pack_icon.png"),
+                   arcname="pack_icon.png")
+        pack.write(os.path.join(self.main_resource_path, "manifest.json"),
+                   arcname="manifest.json")
+        pack.write(os.path.join(self.main_resource_path, "loading_messages.json"),
+                   arcname="loading_messages.json")
         self.__dump_language_file(pack, *lang_supp)
         # dump resources
         item_texture, terrain_texture = self._dump_resources(
             pack, *resource_modules)
         if item_texture:
-            item_texture_content = self.__merge_json(ITEM_FILE, *item_texture)
+            item_texture_content = self.__merge_json("item_texture.json", *item_texture)
             pack.writestr("textures/item_texture.json",
                           json.dumps(item_texture_content, indent=4))
         if terrain_texture:
             terrain_texture_content = self.__merge_json(
-                TERRAIN_FILE, *terrain_texture)
+                "terrain_texture.json", *terrain_texture)
             pack.writestr("textures/terrain_texture.json",
                           json.dumps(terrain_texture_content, indent=4))
         pack.close()
@@ -67,9 +63,9 @@ class BEPackBuilder(PackBuilder):
             for root, _, files in os.walk(base_folder):
                 for file in files:
                     if file not in excluded_files:
-                        if file == ITEM_FILE:
+                        if file == "item_texture.json":
                             item_texture.append(item)
-                        elif file == TERRAIN_FILE:
+                        elif file == "terrain_texture.json":
                             terrain_texture.append(item)
                         else:
                             path = os.path.join(root, file)
@@ -94,16 +90,16 @@ class BEPackBuilder(PackBuilder):
         return result
 
     def __dump_language_file(self, pack: ZipFile, *lang_supp):
-        with open(os.path.join(self.main_resource_path, "texts", ZH_MEME_FILE_NAME), 'r', encoding='utf8') as f:
+        with open(os.path.join(self.main_resource_path, "texts", "zh_ME.lang"), 'r', encoding='utf8') as f:
             lang_data = dict(line[:line.find('#') - 1].strip().split("=", 1)
                              for line in f if line.strip() != '' and not line.startswith('#'))
         lang_data = ''.join(f'{k}={v}\t#\n' for k, v in self._merge_language(
             lang_data, *lang_supp).items())
         if self.build_args['compatible']:
-            pack.writestr(f'texts/{ZH_CN_FILE_NAME}', lang_data)
+            pack.writestr('texts/zh_CN.lang', lang_data)
         else:
             for file in os.listdir(os.path.join(self.main_resource_path, "texts")):
-                if os.path.basename(file) != ZH_MEME_FILE_NAME:
+                if os.path.basename(file) != "zh_ME.lang":
                     pack.write(os.path.join(self.main_resource_path, f"texts/{file}"),
                                arcname=f"texts/{file}")
-            pack.writestr(f'texts/{ZH_MEME_FILE_NAME}', lang_data)
+            pack.writestr('texts/zh_ME.lang', lang_data)
