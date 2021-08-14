@@ -91,6 +91,7 @@ class PackBuilder(object):
                                 f'Warning: Duplicated "{dest_path}", skipping.')
 
         zip_file.close()
+        self.log.append(f'Successfully built {name}.')
 
     def _merge_collection_into_resource(self):
         selected_collections = self.options['modules']['collection']
