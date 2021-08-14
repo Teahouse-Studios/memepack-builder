@@ -24,10 +24,11 @@ class BedrockBuilder(PackBuilder):
         self._normalize_options()
         self._merge_collection_into_resource()
         extra_files = ['pack_icon.png', 'manifest.json']
-        extra_content = {
-            'textures/item_texture.json': self.get_texture('item_texture.json'),
-            'textures/terrain_texture.json': self.get_texture('terrain_texture.json')
-        }
+        extra_content = {}
+        if (content := self.get_texture('item_texture.json')):
+            extra_content['textures/item_texture.json'] = content
+        if (content := self.get_texture('terrain_texture.json')):
+            extra_content['textures/terrain_texture.json'] = content
         self._add_language(extra_files, extra_content)
         self._build(extra_files, extra_content, [
                     'item_texture.json', 'terrain_texture.json'])
@@ -35,11 +36,14 @@ class BedrockBuilder(PackBuilder):
     def get_texture(self, file_name: str):
         texture = {'texture_data': {}}
         for module in self.options['modules']['resource']:
-            path = f'{self.module_overview["module_path"]}/{module}/textures/{file_name}'
+            path = f'{self.module_overview["modulePath"]}/{module}/textures/{file_name}'
             if os.path.exists(path):
                 texture['texture_data'] |= json.load(
                     open(path, encoding='utf8'))['texture_data']
-        return json.dumps(texture, ensure_ascii=False, indent=4)
+        if texture['texture_data'] == {}:
+            return ''
+        else:
+            return json.dumps(texture, ensure_ascii=False, indent=4)
 
     def get_language_content(self, lang_file_path: str, with_modules: bool):
         result = generate_bedrock(f'{self.main_resource_path}/{lang_file_path}',
@@ -49,7 +53,8 @@ class BedrockBuilder(PackBuilder):
 
     def _normalize_options(self):
         options = self.options
-        options['output'] = f'{options["output"]}/{self._config["defaultFileName"]}.{options["type"]}'
+        options['output'] = os.path.join(os.getcwd(
+        ), options["output"], f'{self._config["defaultFileName"]}.{options["type"]}')
 
     def _add_language(self, file_list: list[str], content_list: dict):
         lang_content = self.get_language_content('texts/zh_ME.lang', True)

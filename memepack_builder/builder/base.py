@@ -6,7 +6,7 @@ import json
 import os
 import re
 from hashlib import sha256
-from zipfile import ZipFile
+from zipfile import ZIP_DEFLATED, ZipFile
 
 default_config = {
     'latestJEPackFormat': 7,
@@ -53,7 +53,11 @@ class PackBuilder(object):
     def _append_log(self, *entry):
         self.log.extend(entry)
 
+    def _clear_log(self):
+        self.log.clear()
+
     def _build(self, extra_files: list = [], extra_content: dict = {}, excluded_files: list = []):
+        self._clear_log()
         excluded_files.extend(
             ('add.json', 'remove.json', 'module_manifest.json'))
         module_path = self.module_overview['modulePath']
@@ -64,7 +68,8 @@ class PackBuilder(object):
         if (self.options['hash']):
             hash = sha256(json.dumps(self.options)).hexdigest()[:7]
             name = re.sub(r'\.(\w+)$', rf'.{hash}.\1', name)
-        zip_file = ZipFile(name, compresslevel=5)
+        self._append_log(f'Building {name}.')
+        zip_file = ZipFile(name, mode='w', compression=ZIP_DEFLATED, compresslevel=5)
 
         for file in extra_files:
             zip_file.write(f'{self.main_resource_path}/{file}', file)
@@ -73,10 +78,10 @@ class PackBuilder(object):
             if v != '':
                 zip_file.writestr(k, v)
 
-        for module in self.options['modules']:
+        for module in self._merge_collection_into_resource():
             if module not in valid_modules:
                 self._append_log(
-                    f'Warning: Module "{module}" does not exist, skipping.')
+                    f'Warning: Resource module "{module}" does not exist, skipping.')
                 continue
             for root, _, files in os.walk(os.path.join(module_path, module)):
                 for file in files:
@@ -91,7 +96,7 @@ class PackBuilder(object):
                                 f'Warning: Duplicated "{dest_path}", skipping.')
 
         zip_file.close()
-        self.log.append(f'Successfully built {name}.')
+        self._append_log(f'Successfully built {name}.')
 
     def _merge_collection_into_resource(self):
         selected_collections = self.options['modules']['collection']
@@ -102,7 +107,7 @@ class PackBuilder(object):
                 filter(lambda value: value['name'] == item, collections))
             if not target:
                 self._append_log(
-                    f'Warning: Module "{item}" does not exist, skipping.')
+                    f'Warning: Collection module "{item}" does not exist, skipping.')
                 continue
             else:
                 selected_resource.update(target[0]['contains'])

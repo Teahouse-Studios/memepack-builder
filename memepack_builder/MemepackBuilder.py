@@ -19,6 +19,8 @@ class MemepackBuilder(object):
         else:
             raise ValueError() from None
 
-    def build(self):
+    def build(self, clear_log: bool = True):
+        if clear_log:
+            self.log.clear()
         self.builder.build()
         self.log.extend(self.builder.log)

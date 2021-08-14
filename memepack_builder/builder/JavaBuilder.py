@@ -1,4 +1,5 @@
 import json
+import os
 from .base import PackBuilder
 from ..utils import generate_java_legacy, generate_json
 
@@ -36,7 +37,7 @@ class JavaBuilder(PackBuilder):
             return
         self._normalize_options()
         self._merge_collection_into_resource()
-        extra_files = ['pack.mcmeta', 'LICENSE']
+        extra_files = ['LICENSE']
         extra_content = {}
         self._add_language(extra_files, extra_content)
         self._build(extra_files, extra_content)
@@ -68,7 +69,8 @@ class JavaBuilder(PackBuilder):
         if options['mod']:
             options['mod'] = list(
                 map(lambda v: f'{self.mod_path}/{v}', options['mod']))
-        options['output'] = f'{options["output"]}/{self._config["defaultFileName"]}.zip'
+        options['output'] = os.path.join(os.getcwd(
+        ), options["output"], f'{self._config["defaultFileName"]}.zip')
 
     def _add_language(self, file_list: list[str], content_list: dict):
         if self.options['type'] == 'normal':

@@ -6,19 +6,19 @@ REMOVE_FILE = 'remove.json'
 MAPPING_FILE = 'all_mappings'
 
 
-def generate_json(file_path: str, with_modules: bool, module_overview, modules: list[str], mod_files: list[str]):
+def generate_json(file_path: str, with_modules: bool, module_overview, modules: list[str] = None, mod_files: list[str] = None):
     gen = LanguageFileGenerator(file_path, module_overview, modules, mod_files)
     content = gen.generate_json(with_modules)
     return {'content': content, 'log': gen.log}
 
 
-def generate_java_legacy(file_path: str, with_modules: bool, module_overview, modules: list[str], mod_files: list[str]):
+def generate_java_legacy(file_path: str, with_modules: bool, module_overview, modules: list[str] = None, mod_files: list[str] = None):
     gen = LanguageFileGenerator(file_path, module_overview, modules, mod_files)
     content = gen.generate_java_legacy(with_modules)
     return {'content': content, 'log': gen.log}
 
 
-def generate_bedrock(file_path: str, with_modules: bool, module_overview, modules: list[str], mod_files: list[str]):
+def generate_bedrock(file_path: str, with_modules: bool, module_overview, modules: list[str] = None, mod_files: list[str] = None):
     gen = LanguageFileGenerator(file_path, module_overview, modules, mod_files)
     content = gen.generate_bedrock(with_modules)
     return {'content': content, 'log': gen.log}
