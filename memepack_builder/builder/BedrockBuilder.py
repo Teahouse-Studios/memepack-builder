@@ -24,11 +24,10 @@ class BedrockBuilder(PackBuilder):
         self._normalize_options()
         self._merge_collection_into_resource()
         extra_files = ['pack_icon.png', 'manifest.json']
-        extra_content = {}
-        if (content := self.get_texture('item_texture.json')):
-            extra_content['textures/item_texture.json'] = content
-        if (content := self.get_texture('terrain_texture.json')):
-            extra_content['textures/terrain_texture.json'] = content
+        extra_content = {
+            'textures/item_texture.json': self.get_texture('item_texture.json'),
+            'textures/terrain_texture.json': self.get_texture('terrain_texture.json')
+        }
         self._add_language(extra_files, extra_content)
         self._build(extra_files, extra_content, [
                     'item_texture.json', 'terrain_texture.json'])

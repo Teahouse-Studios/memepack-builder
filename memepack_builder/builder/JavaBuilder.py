@@ -37,7 +37,7 @@ class JavaBuilder(PackBuilder):
             return
         self._normalize_options()
         self._merge_collection_into_resource()
-        extra_files = ['LICENSE']
+        extra_files = ['LICENSE', 'pack.png']
         extra_content = {}
         self._add_language(extra_files, extra_content)
         self._build(extra_files, extra_content)

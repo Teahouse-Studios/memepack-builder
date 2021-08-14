@@ -3,7 +3,7 @@ from .module_checker import ModuleChecker
 
 
 class MemepackBuilder(object):
-    def __init__(self, platform: str, resource_path: str, module_path: str, build_options: dict, mod_path: str = None) -> None:
+    def __init__(self, platform: str, resource_path: str, module_path: str, build_options: dict = None, mod_path: str = None) -> None:
         super().__init__()
         self.log = []
         self.module_checker = ModuleChecker(module_path)

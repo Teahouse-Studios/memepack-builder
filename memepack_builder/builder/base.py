@@ -56,7 +56,7 @@ class PackBuilder(object):
     def _clear_log(self):
         self.log.clear()
 
-    def _build(self, extra_files: list = [], extra_content: dict = {}, excluded_files: list = []):
+    def _build(self, extra_files: list[str] = [], extra_content: dict = {}, excluded_files: list[str] = []):
         self._clear_log()
         excluded_files.extend(
             ('add.json', 'remove.json', 'module_manifest.json'))
