@@ -1,5 +1,3 @@
-__all__ = ['ModuleChecker']
-
 import json
 import os
 
@@ -29,11 +27,9 @@ class ModuleChecker(object):
                 'collection': []
             }
         }
-
         for module in os.listdir(self.module_path):
             manifest = os.path.join(
                     self.module_path, module, 'module_manifest.json')
             data = json.load(open(manifest, 'r', encoding='utf8'))
             overview['modules'][data.pop('type')].append(data)
-
         return overview

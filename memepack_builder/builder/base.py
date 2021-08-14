@@ -44,7 +44,7 @@ class PackBuilder(object):
     def _append_log(self, *entry):
         self.log.extend(entry)
 
-    def build(self, extra_files: list = [], extra_content: dict = {}, excluded_files: list = []):
+    def _build(self, extra_files: list = [], extra_content: dict = {}, excluded_files: list = []):
         excluded_files.extend(
             ('add.json', 'remove.json', 'module_manifest.json'))
         module_path = self.module_overview['modulePath']
