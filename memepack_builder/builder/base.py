@@ -8,6 +8,12 @@ import re
 from hashlib import sha256
 from zipfile import ZipFile
 
+default_config = {
+    'latestJEPackFormat': 7,
+    'legacyJEPackFormat': 3,
+    'defaultFileName': 'meme-resourcepack'
+}
+
 
 class PackBuilder(object):
     '''
@@ -15,9 +21,12 @@ class PackBuilder(object):
     The builder accepts the building args, then build the packs on demand.
     '''
 
-    def __init__(self, main_res_path: str, module_overview: dict, options: dict):
-        self._config = json.load(
-            open(os.path.join(os.getcwd(), 'config.json')))
+    def __init__(self, main_res_path: str, module_overview: dict, options: dict = None):
+        if os.path.exists(os.path.expanduser('~/.memepack-builder.json')):
+            self._config = json.load(
+                open(os.path.expanduser('~/.memepack-builder.json')))
+        else:
+            self._config = default_config
         self.__main_res_path = main_res_path
         self.__module_overview = module_overview
         self.log = []

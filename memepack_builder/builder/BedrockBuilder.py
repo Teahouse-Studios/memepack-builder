@@ -5,7 +5,7 @@ from ..utils import generate_bedrock
 
 
 class BedrockBuilder(PackBuilder):
-    def __init__(self, main_res_path: str, module_overview: dict, options: dict):
+    def __init__(self, main_res_path: str, module_overview: dict, options: dict = None):
         super().__init__(main_res_path, module_overview, options)
 
     def validate_options(self):

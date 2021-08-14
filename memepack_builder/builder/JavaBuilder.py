@@ -4,7 +4,7 @@ from ..utils import generate_java_legacy, generate_json
 
 
 class JavaBuilder(PackBuilder):
-    def __init__(self, main_res_path: str, module_overview: dict, mod_path: str, options: dict):
+    def __init__(self, main_res_path: str, module_overview: dict, mod_path: str, options: dict = None):
         super().__init__(main_res_path, module_overview, options)
         self.mod_path = mod_path
 
