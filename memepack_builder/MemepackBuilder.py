@@ -10,14 +10,18 @@ class MemepackBuilder(object):
         overview = self.module_checker.validate_modules()
         self.log.extend(self.module_checker.log)
         if platform == 'be':
+            if build_options and build_options['type'] not in ('mcpack', 'zip'):
+                raise ValueError('Platform does not match type.') from None
             self.builder = BedrockBuilder(
                 resource_path, overview, build_options)
         elif platform == 'je':
+            if build_options and build_options['type'] not in ('normal', 'compat', 'legacy'):
+                raise ValueError('Platform does not match type.') from None
             mod_path = mod_path or ''
             self.builder = JavaBuilder(
                 resource_path, overview, mod_path, build_options)
         else:
-            raise ValueError() from None
+            raise ValueError('Unknown platform.') from None
 
     def build(self, clear_log: bool = True):
         if clear_log:

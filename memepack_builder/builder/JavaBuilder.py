@@ -69,8 +69,8 @@ class JavaBuilder(PackBuilder):
         if options['mod']:
             options['mod'] = list(
                 map(lambda v: f'{self.mod_path}/{v}', options['mod']))
-        options['output'] = os.path.join(os.getcwd(
-        ), options["output"], f'{self._config["defaultFileName"]}.zip')
+        options['outputName'] = os.path.join(os.getcwd(
+        ), options["outputDir"], f'{options["outputName"] or self._config["defaultFileName"]}.zip')
 
     def _add_language(self, file_list: list[str], content_list: dict):
         if self.options['type'] == 'normal':
