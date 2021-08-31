@@ -27,7 +27,7 @@ def generate_bedrock(file_path: str, with_modules: bool, module_overview, module
 class LanguageFileGenerator(object):
     def __init__(self, main_language_path: str, module_overview, modules: list[str] = None, mod_files: list[str] = None):
         super().__init__()
-        self._main_language_path = main_language_path
+        self._main_language_path = os.path.abspath(main_language_path)
         self._module_overview = module_overview
         self._modules = modules or []
         self._mod_files = mod_files or []

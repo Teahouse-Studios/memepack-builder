@@ -52,8 +52,8 @@ class BedrockBuilder(PackBuilder):
 
     def _normalize_options(self):
         options = self.options
-        options['outputName'] = os.path.join(os.getcwd(
-        ), options["outputDir"], f'{options["outputName"] or self._config["defaultFileName"]}.{options["type"]}')
+        options['outputName'] = os.path.abspath(os.path.join(
+            options["outputDir"], f'{options["outputName"] or self._config["defaultFileName"]}.{options["type"]}'))
 
     def _add_language(self, file_list: list[str], content_list: dict):
         lang_content = self.get_language_content('texts/zh_ME.lang', True)

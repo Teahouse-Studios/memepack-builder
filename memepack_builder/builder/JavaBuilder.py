@@ -7,7 +7,7 @@ from ..utils import generate_java_legacy, generate_json
 class JavaBuilder(PackBuilder):
     def __init__(self, main_res_path: str, module_overview: dict, mod_path: str, options: dict = None):
         super().__init__(main_res_path, module_overview, options)
-        self.mod_path = mod_path
+        self.mod_path = os.path.abspath(mod_path)
 
     def validate_options(self):
         latest_je = self._config['latestJEPackFormat']
@@ -67,10 +67,10 @@ class JavaBuilder(PackBuilder):
     def _normalize_options(self):
         options = self.options
         if options['mod']:
-            options['mod'] = list(
-                map(lambda v: f'{self.mod_path}/{v}', options['mod']))
-        options['outputName'] = os.path.join(os.getcwd(
-        ), options["outputDir"], f'{options["outputName"] or self._config["defaultFileName"]}.zip')
+            options['mod'] = list(map(lambda v: os.path.abspath(
+                os.path.join(self.mod_path, v)), options['mod']))
+        options['outputName'] = os.path.abspath(os.path.join(
+            options["outputDir"], f'{options["outputName"] or self._config["defaultFileName"]}.zip'))
 
     def _add_language(self, file_list: list[str], content_list: dict):
         if self.options['type'] == 'normal':

@@ -4,7 +4,7 @@ import os
 
 class ModuleChecker(object):
     def __init__(self, module_path: str):
-        self.module_path = module_path
+        self.module_path = os.path.abspath(module_path)
         self.log = []
 
     # Deprecated: keeps only as an alias
@@ -28,8 +28,8 @@ class ModuleChecker(object):
             }
         }
         for module in os.listdir(self.module_path):
-            manifest = os.path.join(
-                    self.module_path, module, 'module_manifest.json')
+            manifest = os.path.abspath(os.path.join(
+                    self.module_path, module, 'module_manifest.json'))
             data = json.load(open(manifest, 'r', encoding='utf8'))
             overview['modules'][data.pop('type')].append(data)
         return overview
